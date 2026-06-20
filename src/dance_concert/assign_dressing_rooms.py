@@ -30,8 +30,8 @@ class DataClass(ABC):
     @abstractionmethod
     def import_data(self, file_path: str):
         pass
-    @abstractionmethod
-    def 
+    # @abstractionmethod
+    # def 
 
 class RoomSorter():
     def import_data(self, fname: str):

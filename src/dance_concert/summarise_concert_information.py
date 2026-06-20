@@ -14,7 +14,8 @@ def main(student_class_list, routines_in_shows, show_list):
         unique_students_current_show_df = students_routine_current_show_df[["Student First Name", "Student Last Name"]].drop_duplicates()
         print(f"Number of students in {show} concert is {len(unique_students_current_show_df)}")
 
-
+    # Students with x number of routines
+    print(student_class_list_df.groupby(["Student First Name", "Student Last Name"]).count().groupby("Class Name").count()["Status"])
     # print("dofakdsfnasdf")
 
 
