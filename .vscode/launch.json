@@ -1,0 +1,15 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "debugpy",
+            "name": "Python Debugger: Current File with Args",
+            "program": "${file}",
+            "request": "launch",
+            "args": ["--student_class_list", "data/student_item_list.csv", "--routines_in_shows", "data/routines_in_shows.csv", "--show_list", "data/show_list.csv"]
+        }
+    ]
+}
