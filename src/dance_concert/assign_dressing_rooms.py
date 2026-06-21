@@ -39,6 +39,7 @@ Possible methods:
 - rules-based 
 - social network analysis with graphs
     - community pooling
+    - node2vec
 - k-means clustering (constrained). or any other constrained clustering techniques
     - each student is a dot, and each class is a dimension with a a 1 or 0, depending on whether a student is in that class. then PCA
     - OR convert the graph to a vectorised space and and combine
@@ -56,12 +57,42 @@ Possible methods:
 
 # def import_data_frame(pd)
 
-class DressingRoomClustering(ABC): #Note: dependency inversion to implement different clustering algorithms
+# Abstraction for clustering (inerface)
+class Clusterer(ABC): #Note: dependency inversion to implement different clustering algorithms
     @abstractmethod
-    def import_data(self, file_path: str):
+    def cluster(self, df):
         pass
-    # @abstractionmethod
+    # @abstractnmethod
     # def 
+
+
+# Low level module: concrete implementation
+class KMeansClustering(Clusterer):
+    def cluster(self, df):
+        unique_students = df[["Student First Name", "Student Last Name"]].drop_duplicates()
+        unique_classes = df["Class Name"].unique()
+        data_points = []
+        for idx, student in unique_students.iterrows():
+            student_class_bool = []
+            for class_name in unique_classes:
+                student_in_class = df[(df["Class Name"] == class_name) & (df["Student First Name"] == student["Student First Name"]) & (df["Student Last Name"] == student["Student Last Name"])]
+                if len(student_in_class)>0:
+                    student_class_bool.append(1)
+                else:
+                    student_class_bool.append(0)
+            data_points.append(student_class_bool)
+        print(data_points)
+        # pass
+
+        
+
+
+# High level module: depends on abstraction
+class DressingRoomClustering:
+    def __init__(self, clusterer: Clusterer):
+        self.clusterer = clusterer
+
+    
 
 
 
@@ -103,16 +134,17 @@ class RoomSorter:
             self.student_graph.add_edge(u, v, weight=count)
 
         # self.student_graph.add_edges_from(edges)
-
-        
+   
     def visualise_graph(self):
         net = Network()
         net.from_nx(self.student_graph)
         for node in net.nodes:
             node["title"] = node["id"] + "<br>" +"<br>".join(node["Classes"]) 
         net.show("testgraph.html", notebook = False)
-
+        a=1
         pass
+    
+    
 
 
     
