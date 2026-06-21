@@ -9,7 +9,7 @@
             "name": "Python Debugger: Current File with Args",
             "program": "${file}",
             "request": "launch",
-            "args": ["--student_class_list", "data/student_item_list.csv", "--routines_in_shows", "data/routines_in_shows.csv", "--show_list", "data/show_list.csv"]
+            "args": ["--student_class_list", "data/student_item_list.csv"] //, "--routines_in_shows", "data/routines_in_shows.csv", "--show_list", "data/show_list.csv"]
         }
     ]
 }

@@ -2,6 +2,17 @@ import argparse
 import pandas as pd
 from utils import import_data
 
+"""
+Inputs:
+- student_class_list: JR export of students in the concert and which classes they are in (.csv)
+- routines_in_shows: list of JR classes in the concert (must match class name in JR), name of the item, columns for each show (eg "10am", "1pm", "5:15pm") with 1 in the column if that routine is in that show.
+- show_list: list of each show in the concert. Must match the column names in "routines_in_shows"
+
+Desired functionality:
+- present a summary of concert 
+
+"""
+
 def main(student_class_list, routines_in_shows, show_list):
     student_class_list_df = import_data(student_class_list)
     routines_in_shows_df = import_data(routines_in_shows)

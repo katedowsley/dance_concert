@@ -1,6 +1,15 @@
-from abc import ABC, abstractionmethod
+from abc import ABC, abstractmethod
 import argparse
 import pandas as pd
+import networkx as nx
+from pyvis.network import Network
+import matplotlib
+matplotlib.use('tkagg')
+import matplotlib.pyplot as plt
+
+
+from utils import import_data
+
 """
 Inputs:
 - list of students in the concert - items + shows + teachers. One line per item per show per student
@@ -19,44 +28,96 @@ Outputs:
 Logic considerations:
 - balancing number of costume/hair/tights changes in a room
 - kids should be in a room with other kids that they know 
+- boys should have their own dressng room
 
 Other:
 - one show at a time, for kids in multiple shows assign first show of the day and use that as an input for later shows
+
+
+Possible methods:
+- rules-based 
+- social network analysis with graphs
+- k-means clustering (constrained). or any other constrained clustering techniques
+    - each student is a dot, and each class is a dimension with a a 1 or 0, depending on whether a student is in that class. then PCA
+    - OR convert the graph to a vectorised space and and combine
+    - constrained by sizes of dressing rooms
+    - constrained by sizes
+- Mixed-Integer Linear Programming (MILP)
+    - optimisation with several constraints
+
 """
+
+#TODO - use concert item to link students, not just class
+#TODO - add weights, the more dances in common, the higher the weight
 
 # def import_data_frame(pd)
 
-class DataClass(ABC):
-    @abstractionmethod
+class DressingRoomClustering(ABC): #Note: dependency inversion to implement different clustering algorithms
+    @abstractmethod
     def import_data(self, file_path: str):
         pass
     # @abstractionmethod
     # def 
 
-class RoomSorter():
-    def import_data(self, fname: str):
-        if ".csv" in fname:
-            self.student_item_df = pd.read_csv(fname)
-
-        elif any(excl_ext in fname for excl_ext in ['.xlsx', '.xls', '.xlsm', '.xlsb']):
-            self.student_item_df = pd.read_csv(fname)
-        else:
-            TypeError(f"Input data must be in the form of a csv or excel file")
 
 
+class RoomSorter:
+    def __init__(self, fname: str):
+        self.student_class_df = import_data(fname) #TODO change this so that it could be initialised with an existing df --> good for testing
+
+    def create_graph(self):
+        self.student_graph = nx.Graph()
+
+        unique_students = self.student_class_df[["Student First Name", "Student Last Name"]].drop_duplicates()
+        nodes = []
+        for index, student in unique_students.iterrows():
+            temp_student_df = self.student_class_df[(self.student_class_df["Student First Name"] == student["Student First Name"]) & (self.student_class_df["Student Last Name"] == student["Student Last Name"])]
+            student_id = student["Student First Name"]+student["Student Last Name"]
+            student_info = temp_student_df.iloc[0][["Contact First Name", "Contact Last Name", "Birthdate", "Gender"]].to_dict()
+            student_info["Classes"] = list(temp_student_df["Class Name"])
+
+            nodes.append((student_id, student_info))
+        unique_classes = self.student_class_df["Class Name"].unique()
+        edges = []
+        for class_name in unique_classes:
+            temp_class_df = self.student_class_df[(self.student_class_df["Class Name"] == class_name)]
+            for index, student_row in temp_class_df.iterrows():
+                curr_student = student_row["Student First Name"] + student_row["Student Last Name"]
+                students_to_join_df = temp_class_df[temp_class_df.index>index]
+                for index_next, next_student_row in students_to_join_df.iterrows():
+                    next_student = next_student_row["Student First Name"] + next_student_row["Student Last Name"]
+                    edges.append((curr_student, next_student))
+            a = 1
+    
+        self.student_graph.add_nodes_from(nodes)
+        self.student_graph.add_edges_from(edges)
+
+
+        
+    def visualise_graph(self):
+        net = Network()
+        net.from_nx(self.student_graph)
+        for node in net.nodes:
+            node["title"] = node["id"] + "<br>" +"<br>".join(node["Classes"]) 
+        net.show("testgraph.html", notebook = False)
+
+        pass
 
 
     
 
-def main():
+def main(student_class_list):
     print("yeehaw")
-    room_sorter = RoomSorter()
-    room_sorter.import_data()
-
+    plt.plot()
+    room_sorter = RoomSorter(student_class_list)
+    room_sorter.create_graph()
+    room_sorter.visualise_graph()
+    a = 1
     # import the student item df
     # import the list of dressing rooms
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description="Module to assign dressing rooms")
-    parser.add_argument("--student_item_list")
-    main()
+    parser.add_argument("--student_class_list", required = True, type = str)
+    args = parser.parse_args()
+    main(args.student_class_list)
