@@ -3,6 +3,7 @@ import argparse
 import pandas as pd
 import networkx as nx
 from pyvis.network import Network
+from collections import Counter
 import matplotlib
 matplotlib.use('tkagg')
 import matplotlib.pyplot as plt
@@ -37,18 +38,21 @@ Other:
 Possible methods:
 - rules-based 
 - social network analysis with graphs
+    - community pooling
 - k-means clustering (constrained). or any other constrained clustering techniques
     - each student is a dot, and each class is a dimension with a a 1 or 0, depending on whether a student is in that class. then PCA
     - OR convert the graph to a vectorised space and and combine
     - constrained by sizes of dressing rooms
     - constrained by sizes
+- other clustering methods:
+    - hierarchical
+    - https://deepfa.ir/en/blog/introduction-to-clustering-algorithms-concepts-applications-key-algorithms
 - Mixed-Integer Linear Programming (MILP)
     - optimisation with several constraints
 
 """
 
 #TODO - use concert item to link students, not just class
-#TODO - add weights, the more dances in common, the higher the weight
 
 # def import_data_frame(pd)
 
@@ -90,8 +94,15 @@ class RoomSorter:
             a = 1
     
         self.student_graph.add_nodes_from(nodes)
-        self.student_graph.add_edges_from(edges)
 
+        # Account for repeated edges with weights
+        edge_counts = Counter(edges)
+
+        # Add edges with the calculated frequency as the weight
+        for (u, v), count in edge_counts.items():
+            self.student_graph.add_edge(u, v, weight=count)
+
+        # self.student_graph.add_edges_from(edges)
 
         
     def visualise_graph(self):
